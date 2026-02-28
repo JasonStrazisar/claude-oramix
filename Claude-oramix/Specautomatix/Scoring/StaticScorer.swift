@@ -10,8 +10,8 @@ struct StaticScorer {
         checks += completenessResults
         checks += clarityChecks(spec, completenessResults: completenessResults)
         checks += testabilityChecks(spec, completenessResults: completenessResults)
-        // Future: checks += safetyChecks(spec)
-        // Future: checks += bonusChecks(spec)
+        checks += safetyChecks(spec)
+        checks += bonusChecks(spec)
         let total = min(100, checks.filter { $0.passed }.map { $0.weight }.reduce(0, +))
         let grade = computeGrade(total)
         return SpecScore(
@@ -243,6 +243,125 @@ struct StaticScorer {
             message: passed
                 ? "All 'then' fields are concrete and measurable."
                 : "A 'then' field contains a vague phrase: '\(foundVague ?? "")'."
+        )
+    }
+
+    // MARK: - Safety checks
+
+    private static let mergeSafeKeywords: [String] = [
+        "merge-safe",
+        "mergeable",
+        "additive only",
+        "independently mergeable",
+        "behind a flag",
+        "no existing behavior"
+    ]
+
+    private func safetyChecks(_ spec: Spec) -> [ScoreCheck] {
+        [
+            checkS1(spec),
+            checkS2(spec),
+            checkS3(spec)
+        ]
+    }
+
+    private func checkS1(_ spec: Spec) -> ScoreCheck {
+        let passed = !spec.sections.nonGoals.isEmpty
+        return makeCheck(
+            category: .safety,
+            name: "non_goals_present",
+            passed: passed,
+            weight: 10,
+            message: passed
+                ? "At least one non-goal is defined."
+                : "At least one non-goal must be listed."
+        )
+    }
+
+    private func checkS2(_ spec: Spec) -> ScoreCheck {
+        guard let estimate = spec.metadata.estimate else {
+            return makeCheck(
+                category: .safety,
+                name: "scope_reasonable",
+                passed: true,
+                weight: 0,
+                message: "No estimate provided — scope not assessed."
+            )
+        }
+        let passed = estimate <= 3
+        return makeCheck(
+            category: .safety,
+            name: "scope_reasonable",
+            passed: passed,
+            weight: 5,
+            message: passed
+                ? "Estimate is within reasonable scope (<= 3 days)."
+                : "Estimate exceeds 3 days — consider splitting the spec."
+        )
+    }
+
+    private func checkS3(_ spec: Spec) -> ScoreCheck {
+        let technicalNotes = spec.sections.technicalNotes ?? ""
+        let nonGoalsText = spec.sections.nonGoals.joined(separator: " ")
+        let combined = (technicalNotes + " " + nonGoalsText).lowercased()
+        let passed = StaticScorer.mergeSafeKeywords.contains { combined.contains($0) }
+        return makeCheck(
+            category: .safety,
+            name: "merge_safe",
+            passed: passed,
+            weight: 5,
+            message: passed
+                ? "Spec declares merge-safe intent."
+                : "Spec must declare merge safety (e.g. 'merge-safe', 'additive only', 'behind a flag')."
+        )
+    }
+
+    // MARK: - Bonus checks
+
+    private func bonusChecks(_ spec: Spec) -> [ScoreCheck] {
+        [
+            checkB1(spec),
+            checkB2(spec),
+            checkB3(spec)
+        ]
+    }
+
+    private func checkB1(_ spec: Spec) -> ScoreCheck {
+        let passed = !spec.sections.patterns.isEmpty
+        return makeCheck(
+            category: .safety,
+            name: "patterns_referenced",
+            passed: passed,
+            weight: 5,
+            message: passed
+                ? "At least one pattern is referenced."
+                : "Consider referencing relevant patterns."
+        )
+    }
+
+    private func checkB2(_ spec: Spec) -> ScoreCheck {
+        let passed = spec.sections.context.map { !$0.isEmpty } ?? false
+        return makeCheck(
+            category: .safety,
+            name: "context_provided",
+            passed: passed,
+            weight: 3,
+            message: passed
+                ? "Context section is provided."
+                : "Consider adding a context section."
+        )
+    }
+
+    private func checkB3(_ spec: Spec) -> ScoreCheck {
+        let passed = spec.sections.technicalNotes.map { !$0.isEmpty } ?? false
+        return makeCheck(
+            category: .safety,
+            name: "technical_notes",
+            passed: passed,
+            weight: 2,
+            message: passed
+                ? "Technical notes are provided."
+                : "Consider adding technical notes."
         )
     }
 
