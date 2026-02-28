@@ -7,7 +7,7 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $activeTab) {
-            Text("Specautomatix")
+            SpecautomatixView()
                 .tabItem {
                     Label("Specautomatix", systemImage: "hammer")
                 }
