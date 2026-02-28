@@ -15,5 +15,10 @@ struct ClaudeOramixApp: App {
         .commands {
             CommandGroup(replacing: .newItem) {}
         }
+
+        Settings {
+            SettingsPlaceholderView()
+                .preferredColorScheme(.light)
+        }
     }
 }
