@@ -18,7 +18,7 @@ struct StaticScorer {
             total: total,
             grade: grade,
             checks: checks,
-            suggestions: [],
+            suggestions: generateSuggestions(from: checks),
             isAgentReady: grade == .A || grade == .B
         )
     }
@@ -363,6 +363,69 @@ struct StaticScorer {
                 ? "Technical notes are provided."
                 : "Consider adding technical notes."
         )
+    }
+
+    // MARK: - Suggestion generation
+
+    private func generateSuggestions(from checks: [ScoreCheck]) -> [String] {
+        checks.compactMap { check in
+            guard !check.passed else { return nil }
+            if check.message.hasPrefix("N/A") {
+                return cascadeSuggestion(for: check)
+            }
+            guard check.weight > 0 else { return nil }
+            return suggestion(for: check)
+        }
+    }
+
+    private func suggestion(for check: ScoreCheck) -> String? {
+        switch check.name {
+        case "what_present":
+            return "Décrivez le comportement attendu en détail (> 50 caractères)."
+        case "files_listed":
+            return "Listez les fichiers à modifier."
+        case "acceptance_present":
+            return "Ajoutez au moins 2 critères d'acceptance Given/When/Then."
+        case "files_have_description":
+            return "Chaque fichier doit avoir une description non vide."
+        case "what_no_ambiguity":
+            return "Supprimez les termes vagues de la section 'what' (ex: 'improve', 'fix', 'maybe')."
+        case "acceptance_gwt_format":
+            return "Assurez-vous que chaque critère d'acceptance a un Given, When et Then non vide."
+        case "acceptance_types_covered":
+            return "Ajoutez au moins un critère error_case ou edge_case."
+        case "acceptance_measurable":
+            return "Rendez les 'Then' plus concrets et mesurables (ex: 'Retourne X' plutôt que 'fonctionne mieux')."
+        case "non_goals_present":
+            return "Précisez ce que l'agent ne doit PAS faire (non-goals)."
+        case "scope_reasonable":
+            return "Estimate trop élevé (> 3) — envisagez de découper la spec."
+        case "merge_safe":
+            return "Déclarez que la MR est mergeable seul (ex: 'merge-safe', 'additive only')."
+        case "patterns_referenced":
+            return "Référencez des patterns ou conventions existants."
+        case "context_provided":
+            return "Ajoutez un contexte pour aider l'agent à comprendre le 'pourquoi'."
+        case "technical_notes":
+            return "Ajoutez des notes techniques sur les contraintes d'implémentation."
+        default:
+            return nil
+        }
+    }
+
+    private func cascadeSuggestion(for check: ScoreCheck) -> String? {
+        switch check.name {
+        case "what_no_ambiguity":
+            return "CL1 nécessite que C1 soit validé d'abord : décrivez le comportement en détail (> 50 caractères)."
+        case "acceptance_gwt_format":
+            return "CL2 nécessite que C3 soit validé d'abord : ajoutez au moins 2 critères d'acceptance."
+        case "acceptance_types_covered":
+            return "T1 nécessite que C3 soit validé d'abord : ajoutez au moins 2 critères d'acceptance."
+        case "acceptance_measurable":
+            return "T2 nécessite que C3 soit validé d'abord : ajoutez au moins 2 critères d'acceptance."
+        default:
+            return nil
+        }
     }
 
     // MARK: - Helpers
