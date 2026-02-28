@@ -6,11 +6,12 @@ struct StaticScorer {
 
     func score(_ spec: Spec) -> SpecScore {
         var checks: [ScoreCheck] = []
-        checks += checkCompleteness(spec)
-        // Future: checks += checkClarity(spec)
-        // Future: checks += checkTestability(spec)
-        // Future: checks += checkScope(spec)
-        // Future: checks += checkSafety(spec)
+        let completenessResults = checkCompleteness(spec)
+        checks += completenessResults
+        checks += clarityChecks(spec, completenessResults: completenessResults)
+        // Future: checks += testabilityChecks(spec, completenessResults: completenessResults)
+        // Future: checks += safetyChecks(spec)
+        // Future: checks += bonusChecks(spec)
         let total = min(100, checks.filter { $0.passed }.map { $0.weight }.reduce(0, +))
         let grade = computeGrade(total)
         return SpecScore(
@@ -87,6 +88,93 @@ struct StaticScorer {
                 : hasFiles
                     ? "Every target file must have a non-empty description."
                     : "No target files to check for descriptions."
+        )
+    }
+
+    // MARK: - Clarity checks
+
+    private static let vagueWords: [String] = [
+        "should probably",
+        "maybe",
+        "might",
+        "etc.",
+        "and so on",
+        "improve",
+        "better",
+        "faster",
+        "optimize",
+        "fix",
+        "handle properly",
+        "work correctly",
+        "as needed",
+        "if necessary",
+        "when appropriate",
+        "similar to",
+        "like before"
+    ]
+
+    private func clarityChecks(_ spec: Spec, completenessResults: [ScoreCheck]) -> [ScoreCheck] {
+        let c1Passed = completenessResults.first { $0.name == "what_present" }?.passed ?? false
+        let c3Passed = completenessResults.first { $0.name == "acceptance_present" }?.passed ?? false
+        return [
+            checkCL1(spec, c1Passed: c1Passed),
+            checkCL2(spec, c3Passed: c3Passed)
+        ]
+    }
+
+    private func checkCL1(_ spec: Spec, c1Passed: Bool) -> ScoreCheck {
+        guard c1Passed else {
+            return makeCheck(
+                category: .clarity,
+                name: "what_no_ambiguity",
+                passed: false,
+                weight: 0,
+                message: "N/A — CL1 requires C1 to pass first."
+            )
+        }
+        let what = spec.sections.what.lowercased()
+        let foundVague = StaticScorer.vagueWords.first { vague in
+            if vague == "fix" {
+                return what.range(
+                    of: #"\bfix\b"#,
+                    options: [.regularExpression, .caseInsensitive]
+                ) != nil
+            }
+            return what.contains(vague)
+        }
+        let passed = foundVague == nil
+        return makeCheck(
+            category: .clarity,
+            name: "what_no_ambiguity",
+            passed: passed,
+            weight: 10,
+            message: passed
+                ? "Section 'what' contains no ambiguous language."
+                : "Section 'what' contains vague term: '\(foundVague ?? "")'."
+        )
+    }
+
+    private func checkCL2(_ spec: Spec, c3Passed: Bool) -> ScoreCheck {
+        guard c3Passed else {
+            return makeCheck(
+                category: .clarity,
+                name: "acceptance_gwt_format",
+                passed: false,
+                weight: 0,
+                message: "N/A — CL2 requires C3 to pass first."
+            )
+        }
+        let allComplete = spec.sections.acceptance.allSatisfy {
+            !$0.given.isEmpty && !$0.when_.isEmpty && !$0.then_.isEmpty
+        }
+        return makeCheck(
+            category: .clarity,
+            name: "acceptance_gwt_format",
+            passed: allComplete,
+            weight: 10,
+            message: allComplete
+                ? "All acceptance criteria have non-empty given, when, and then fields."
+                : "Every acceptance criterion must have non-empty given, when, and then fields."
         )
     }
 
