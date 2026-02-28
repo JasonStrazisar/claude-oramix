@@ -9,7 +9,7 @@ struct StaticScorer {
         let completenessResults = checkCompleteness(spec)
         checks += completenessResults
         checks += clarityChecks(spec, completenessResults: completenessResults)
-        // Future: checks += testabilityChecks(spec, completenessResults: completenessResults)
+        checks += testabilityChecks(spec, completenessResults: completenessResults)
         // Future: checks += safetyChecks(spec)
         // Future: checks += bonusChecks(spec)
         let total = min(100, checks.filter { $0.passed }.map { $0.weight }.reduce(0, +))
@@ -175,6 +175,74 @@ struct StaticScorer {
             message: allComplete
                 ? "All acceptance criteria have non-empty given, when, and then fields."
                 : "Every acceptance criterion must have non-empty given, when, and then fields."
+        )
+    }
+
+    // MARK: - Testability checks
+
+    private static let vagueThenPhrases: [String] = [
+        "should work",
+        "displays correctly",
+        "is faster",
+        "handles gracefully",
+        "responds appropriately"
+    ]
+
+    private func testabilityChecks(_ spec: Spec, completenessResults: [ScoreCheck]) -> [ScoreCheck] {
+        let c3Passed = completenessResults.first { $0.name == "acceptance_present" }?.passed ?? false
+        return [
+            checkT1(spec, c3Passed: c3Passed),
+            checkT2(spec, c3Passed: c3Passed)
+        ]
+    }
+
+    private func checkT1(_ spec: Spec, c3Passed: Bool) -> ScoreCheck {
+        guard c3Passed else {
+            return makeCheck(
+                category: .testability,
+                name: "acceptance_types_covered",
+                passed: false,
+                weight: 0,
+                message: "N/A — T1 requires C3 to pass first."
+            )
+        }
+        let hasHappyPath = spec.sections.acceptance.contains { $0.type == .happyPath }
+        let hasErrorOrEdge = spec.sections.acceptance.contains { $0.type == .errorCase || $0.type == .edgeCase }
+        let passed = hasHappyPath && hasErrorOrEdge
+        return makeCheck(
+            category: .testability,
+            name: "acceptance_types_covered",
+            passed: passed,
+            weight: 10,
+            message: passed
+                ? "Acceptance criteria cover at least one happy path and one error/edge case."
+                : "Acceptance criteria must include at least one happy_path and one error_case or edge_case."
+        )
+    }
+
+    private func checkT2(_ spec: Spec, c3Passed: Bool) -> ScoreCheck {
+        guard c3Passed else {
+            return makeCheck(
+                category: .testability,
+                name: "acceptance_measurable",
+                passed: false,
+                weight: 0,
+                message: "N/A — T2 requires C3 to pass first."
+            )
+        }
+        let foundVague = spec.sections.acceptance.compactMap { ac -> String? in
+            let then = ac.then_.lowercased()
+            return StaticScorer.vagueThenPhrases.first { then.contains($0) }
+        }.first
+        let passed = foundVague == nil
+        return makeCheck(
+            category: .testability,
+            name: "acceptance_measurable",
+            passed: passed,
+            weight: 5,
+            message: passed
+                ? "All 'then' fields are concrete and measurable."
+                : "A 'then' field contains a vague phrase: '\(foundVague ?? "")'."
         )
     }
 
