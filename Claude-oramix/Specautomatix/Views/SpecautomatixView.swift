@@ -25,17 +25,13 @@ struct SpecautomatixView: View {
             if editingSpec != nil {
                 SpecEditorView(spec: editingSpecBinding, onDelete: handleDelete)
             } else {
-                Text("Sélectionnez une spec dans la sidebar")
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                editorEmptyState
             }
         } detail: {
             if let spec = editingSpec {
                 ScorePanelView(spec: spec)
             } else {
-                Text("Sélectionnez une spec dans la sidebar")
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                scorePanelEmptyState
             }
         }
         .onAppear {
@@ -50,6 +46,62 @@ struct SpecautomatixView: View {
                 .opacity(0)
                 .allowsHitTesting(false)
         }
+    }
+
+    // MARK: - Empty states
+
+    @ViewBuilder
+    private var editorEmptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "doc.text")
+                .font(.system(size: 36))
+                .foregroundColor(Color.theme.textTertiary)
+
+            Text("No spec selected")
+                .font(.system(.title3, design: .default).weight(.semibold))
+                .foregroundColor(Color.theme.textSecondary)
+
+            Text("Select a spec from the sidebar, or press ⌘N to create one.")
+                .font(.callout)
+                .foregroundColor(Color.theme.textTertiary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 280)
+
+            Button {
+                createNewSpec()
+            } label: {
+                Label("New Spec", systemImage: "plus.circle.fill")
+                    .font(.callout.weight(.medium))
+                    .foregroundColor(Color.theme.accent)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.theme.accentLight)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.theme.background)
+    }
+
+    @ViewBuilder
+    private var scorePanelEmptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "checkmark.seal")
+                .font(.system(size: 32))
+                .foregroundColor(Color.theme.textTertiary)
+
+            Text("Score panel")
+                .font(.system(.callout, design: .default).weight(.semibold))
+                .foregroundColor(Color.theme.textTertiary)
+
+            Text("Select a spec to see its score.")
+                .font(.caption)
+                .foregroundColor(Color.theme.textTertiary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.theme.surface)
     }
 
     // MARK: - Keyboard shortcuts (hidden buttons)

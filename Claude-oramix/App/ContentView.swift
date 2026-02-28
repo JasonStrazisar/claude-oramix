@@ -6,30 +6,28 @@ struct ContentView: View {
     @State private var activeTab: Int = 0
 
     var body: some View {
-        TabView(selection: $activeTab) {
-            SpecautomatixView()
-                .tabItem {
-                    Label("Specautomatix", systemImage: "hammer")
+        Group {
+            switch activeTab {
+            case 1:  NuitefixPlaceholderView()
+            default: SpecautomatixView()
+            }
+        }
+        .frame(minWidth: 1100, minHeight: 700)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Picker("", selection: $activeTab) {
+                    Label("Specautomatix", systemImage: "hammer.fill").tag(0)
+                    Label("Nuitéfix", systemImage: "dog.fill").tag(1)
                 }
-                .tag(0)
-
-            NuitefixPlaceholderView()
-                .tabItem {
-                    Label("Nuitéfix", systemImage: "pawprint")
-                }
-                .tag(1)
-
-            SettingsPlaceholderView()
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape")
-                }
-                .tag(2)
+                .pickerStyle(.segmented)
+                .frame(width: 280)
+                .labelsHidden()
+            }
         }
         .onAppear {
             activeTab = selectedTab
         }
         .overlay(alignment: .topLeading) {
-            // Hidden buttons to capture keyboard shortcuts
             Group {
                 Button("") { activeTab = 0 }
                     .keyboardShortcut("1", modifiers: .command)
@@ -37,10 +35,6 @@ struct ContentView: View {
                     .opacity(0)
                 Button("") { activeTab = 1 }
                     .keyboardShortcut("2", modifiers: .command)
-                    .frame(width: 0, height: 0)
-                    .opacity(0)
-                Button("") { activeTab = 2 }
-                    .keyboardShortcut(",", modifiers: .command)
                     .frame(width: 0, height: 0)
                     .opacity(0)
             }

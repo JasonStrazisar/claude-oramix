@@ -1,28 +1,37 @@
 import XCTest
+import SwiftUI
 @testable import Claude_oramix
 
 final class SpecSidebarTests: XCTestCase {
 
-    // MARK: - ScoreBadgeView color tests
+    // MARK: - ScoreBadgeView color tests (theme colors)
 
-    func test_scoreBadge_gradeAIsGreen() {
-        XCTAssertEqual(ScoreBadgeView.color(for: .A), .green)
+    func test_scoreBadge_gradeAIsThemeGreen() {
+        XCTAssertEqual(ScoreBadgeView.color(for: .A), Color.theme.textColor(for: .A))
     }
 
-    func test_scoreBadge_gradeBIsBlue() {
-        XCTAssertEqual(ScoreBadgeView.color(for: .B), .blue)
+    func test_scoreBadge_gradeBIsThemeBlue() {
+        XCTAssertEqual(ScoreBadgeView.color(for: .B), Color.theme.textColor(for: .B))
     }
 
-    func test_scoreBadge_gradeCIsOrange() {
-        XCTAssertEqual(ScoreBadgeView.color(for: .C), .orange)
+    func test_scoreBadge_gradeCIsThemeAmber() {
+        XCTAssertEqual(ScoreBadgeView.color(for: .C), Color.theme.textColor(for: .C))
     }
 
-    func test_scoreBadge_gradeDIsRed() {
-        XCTAssertEqual(ScoreBadgeView.color(for: .D), .red)
+    func test_scoreBadge_gradeDIsThemeRose() {
+        XCTAssertEqual(ScoreBadgeView.color(for: .D), Color.theme.textColor(for: .D))
     }
 
-    func test_scoreBadge_gradeFIsGray() {
-        XCTAssertEqual(ScoreBadgeView.color(for: .F), .gray)
+    func test_scoreBadge_gradeFIsThemeStone() {
+        XCTAssertEqual(ScoreBadgeView.color(for: .F), Color.theme.textColor(for: .F))
+    }
+
+    func test_scoreBadge_colorsAreDistinct() {
+        let grades: [ScoreGrade] = [.A, .B, .C, .D, .F]
+        let colors = grades.map { ScoreBadgeView.color(for: $0) }
+        // Each grade should have a unique color
+        let unique = Set(colors.map { "\($0)" })
+        XCTAssertEqual(unique.count, grades.count)
     }
 
     // MARK: - SpecSidebar sorting tests

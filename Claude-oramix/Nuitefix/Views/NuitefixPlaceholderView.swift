@@ -2,28 +2,45 @@ import SwiftUI
 
 struct NuitefixPlaceholderView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "pawprint.fill")
-                .font(.system(size: 64))
-                .foregroundColor(.secondary)
+        VStack(spacing: 0) {
+            Spacer()
 
-            Text("Nuitéfix")
-                .font(.largeTitle)
-                .bold()
+            VStack(spacing: 20) {
+                // Dog illustration area
+                ZStack {
+                    Circle()
+                        .fill(Color.theme.accentLight)
+                        .frame(width: 96, height: 96)
 
-            Text("Le petit chien fidèle qui part la nuit chercher tes PRs.")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+                    Image(systemName: "dog.fill")
+                        .font(.system(size: 44))
+                        .foregroundColor(Color.theme.accent)
+                }
 
-            Text("Coming in Phase 3")
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-                .background(Color.secondary.opacity(0.15))
-                .cornerRadius(8)
+                VStack(spacing: 8) {
+                    Text("Nuitéfix")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundColor(Color.theme.textPrimary)
+
+                    Text("Le petit chien fidèle qui part la nuit chercher tes PRs.")
+                        .font(.body)
+                        .foregroundColor(Color.theme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 320)
+                }
+
+                Text("Arriving in Phase 3 — the dog is still asleep")
+                    .font(.callout)
+                    .foregroundColor(Color.theme.textTertiary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.theme.accentLight)
+                    .clipShape(Capsule())
+            }
+
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
+        .background(Color.theme.background)
     }
 }
