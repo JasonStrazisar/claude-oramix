@@ -13,7 +13,7 @@ struct ContentView: View {
                 }
                 .tag(0)
 
-            Text("Nuitéfix")
+            NuitefixPlaceholderView()
                 .tabItem {
                     Label("Nuitéfix", systemImage: "pawprint")
                 }
