@@ -1,0 +1,40 @@
+name: Claude-oramix
+options:
+  bundleIdPrefix: com.jasonstrazisar
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ENABLE_HARDENED_RUNTIME: YES
+
+targets:
+  Claude-oramix:
+    type: application
+    platform: macOS
+    sources:
+      - path: Claude-oramix
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jasonstrazisar.claude-oramix
+        PRODUCT_NAME: Claude-oramix
+        INFOPLIST_FILE: Claude-oramix/Resources/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+
+  Claude-oramixTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Claude-oramixTests
+    dependencies:
+      - target: Claude-oramix
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jasonstrazisar.claude-oramix-tests
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Claude-oramix.app/Contents/MacOS/Claude-oramix
+        BUNDLE_LOADER: $(TEST_HOST)
