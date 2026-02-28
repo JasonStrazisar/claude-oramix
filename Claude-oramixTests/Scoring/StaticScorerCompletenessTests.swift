@@ -134,7 +134,7 @@ final class StaticScorerCompletenessTests: XCTestCase {
         XCTAssertEqual(c4!.weight, 0)
     }
 
-    // MARK: - Combined: all checks passing gives max completeness score (50 pts)
+    // MARK: - Combined: all completeness checks passing gives 50 pts from completeness
 
     func test_combined_allChecksPassingGives50Points() {
         var spec = Spec(title: "Full Spec")
@@ -148,20 +148,19 @@ final class StaticScorerCompletenessTests: XCTestCase {
             AcceptanceCriteria(given: "given2", when_: "when2", then_: "then2")
         ]
         let result = scorer.score(spec)
-        XCTAssertEqual(result.total, 50)
-        XCTAssertEqual(result.grade, .D)
+        let completenessChecks = result.checks.filter { $0.category == .completeness }
+        XCTAssertEqual(completenessChecks.count, 4)
+        XCTAssertTrue(completenessChecks.allSatisfy { $0.passed })
+        let completenessTotal = completenessChecks.filter { $0.passed }.map { $0.weight }.reduce(0, +)
+        XCTAssertEqual(completenessTotal, 50)
         XCTAssertFalse(result.isAgentReady)
-        XCTAssertEqual(result.checks.count, 4)
-        XCTAssertTrue(result.checks.allSatisfy { $0.passed })
     }
 
     // MARK: - Grade computation tests
 
     func test_grade_A_at90() {
-        // We can only reach 50 with completeness checks alone, so we verify grade computation
-        // by checking boundary conditions via the combined test above
-        // Grade A requires 90-100 — not reachable with only completeness checks (max 50)
-        // This test verifies grade D for 50 points
+        // Verify grade C is obtained at 70 pts (completeness 50 + clarity 20)
+        // when completeness and clarity checks all pass
         var spec = Spec(title: "Grade Test")
         spec.sections.what = "This is a detailed what section that has more than fifty characters total."
         spec.sections.where_ = [FileTarget(path: "A.swift", description: "desc")]
@@ -170,7 +169,7 @@ final class StaticScorerCompletenessTests: XCTestCase {
             AcceptanceCriteria(given: "g2", when_: "w2", then_: "t2")
         ]
         let result = scorer.score(spec)
-        XCTAssertEqual(result.grade, .D)
+        XCTAssertEqual(result.grade, .C)
     }
 
     func test_grade_F_for_zero() {
