@@ -13,13 +13,13 @@ struct ContentView: View {
                 }
                 .tag(0)
 
-            Text("Nuitéfix")
+            NuitefixPlaceholderView()
                 .tabItem {
                     Label("Nuitéfix", systemImage: "pawprint")
                 }
                 .tag(1)
 
-            Text("Settings")
+            SettingsPlaceholderView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
