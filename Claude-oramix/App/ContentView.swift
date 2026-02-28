@@ -19,7 +19,7 @@ struct ContentView: View {
                 }
                 .tag(1)
 
-            Text("Settings")
+            SettingsPlaceholderView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
