@@ -2,6 +2,9 @@ import SwiftUI
 
 struct ScorePanelView: View {
     let spec: Spec
+    var scorer: OllamaScorer = OllamaScorer()
+
+    @State private var state = ScorePanelState()
 
     private static let categoryOrder: [CheckCategory] = [
         .completeness,
@@ -29,6 +32,11 @@ struct ScorePanelView: View {
 
                     suggestionsSection(suggestions: score.suggestions)
                 }
+
+                Divider()
+                    .background(Color.theme.border)
+
+                ollamaSection
             }
             .padding(20)
         }
@@ -126,5 +134,41 @@ struct ScorePanelView: View {
             .background(Color.theme.gradeCBadge.opacity(0.6))
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
+    }
+
+    // MARK: - Ollama section
+
+    @ViewBuilder
+    private var ollamaSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                Task { await runOllamaCheck() }
+            } label: {
+                HStack(spacing: 8) {
+                    if state.isChecking {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text("Check with Ollama")
+                        .font(.system(.callout, design: .default).weight(.medium))
+                }
+            }
+            .disabled(state.isCheckButtonDisabled)
+            .keyboardShortcut("S", modifiers: [.command, .shift])
+
+            OllamaAnalysisView(
+                analysis: state.ollamaAnalysis,
+                isLoading: state.isChecking
+            )
+        }
+    }
+
+    // MARK: - Private
+
+    @MainActor
+    private func runOllamaCheck() async {
+        state.isChecking = true
+        defer { state.isChecking = false }
+        state.ollamaAnalysis = try? await scorer.analyzeQuality(spec: spec)
     }
 }
