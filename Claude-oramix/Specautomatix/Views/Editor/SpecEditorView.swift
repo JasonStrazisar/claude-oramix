@@ -78,7 +78,8 @@ struct SpecEditorView: View {
         if !showTerminal {
             showTerminal = true
         }
-        terminalManager.send(buildClaudeCommand(for: spec).joined(separator: " "))
+        let command = buildClaudeCommand(for: spec).joined(separator: " ")
+        terminalManager.spawn(command: command)
     }
 
     // MARK: - Header
