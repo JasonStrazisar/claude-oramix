@@ -69,4 +69,20 @@ final class ScorePanelViewTests: XCTestCase {
             XCTAssertTrue(naCheck.message.contains("N/A"))
         }
     }
+
+    // MARK: - shouldShowSplitButton tests
+
+    func testShouldShowSplitButton_whenEstimateGreaterThan3() {
+        var spec = Spec(title: "Big Feature")
+        spec.metadata = SpecMetadata(estimate: 4)
+        let view = ScorePanelView(spec: spec)
+        XCTAssertTrue(view.shouldShowSplitButton)
+    }
+
+    func testShouldShowSplitButton_whenEstimate2AndNoOllama() {
+        var spec = Spec(title: "Small Feature")
+        spec.metadata = SpecMetadata(estimate: 2)
+        let view = ScorePanelView(spec: spec)
+        XCTAssertFalse(view.shouldShowSplitButton)
+    }
 }

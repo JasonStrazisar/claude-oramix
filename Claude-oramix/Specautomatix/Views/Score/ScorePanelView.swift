@@ -5,6 +5,12 @@ struct ScorePanelView: View {
     var scorer: OllamaScorer = OllamaScorer()
 
     @State private var state = ScorePanelState()
+    @State private var showSplitSheet = false
+    @State private var splitProposals: [SplitProposal] = []
+
+    var shouldShowSplitButton: Bool {
+        (spec.metadata.estimate ?? 0) > 3 || state.ollamaAnalysis?.splitSuggestions.isEmpty == false
+    }
 
     private static let categoryOrder: [CheckCategory] = [
         .completeness,
@@ -37,6 +43,13 @@ struct ScorePanelView: View {
                     .background(Color.theme.border)
 
                 ollamaSection
+
+                if shouldShowSplitButton {
+                    Divider()
+                        .background(Color.theme.border)
+
+                    splitSection
+                }
             }
             .padding(20)
         }
@@ -159,6 +172,26 @@ struct ScorePanelView: View {
             OllamaAnalysisView(
                 analysis: state.ollamaAnalysis,
                 isLoading: state.isChecking
+            )
+        }
+    }
+
+    // MARK: - Split section
+
+    @ViewBuilder
+    private var splitSection: some View {
+        Button {
+            splitProposals = SplitEngine().propose(spec: spec, ollamaAnalysis: state.ollamaAnalysis)
+            showSplitSheet = true
+        } label: {
+            Label("Split this spec", systemImage: "scissors")
+                .font(.system(.callout, design: .default).weight(.medium))
+        }
+        .sheet(isPresented: $showSplitSheet) {
+            SplitProposalView(
+                proposals: $splitProposals,
+                onConfirm: { _ in showSplitSheet = false },
+                onCancel: { showSplitSheet = false }
             )
         }
     }
