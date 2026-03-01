@@ -12,7 +12,7 @@ final class SpecStore: ObservableObject {
 
     private let directory: URL
 
-    private var fileURL: URL {
+    var fileURL: URL {
         directory.appendingPathComponent("specs.json")
     }
 
@@ -42,6 +42,13 @@ final class SpecStore: ObservableObject {
 
     convenience init() {
         self.init(directory: SpecStore.defaultDirectory)
+    }
+
+    convenience init(projectId: UUID, baseDirectory: URL = SpecStore.defaultDirectory) {
+        let projectDir = baseDirectory
+            .appendingPathComponent("projects")
+            .appendingPathComponent(projectId.uuidString)
+        self.init(directory: projectDir)
     }
 
     // MARK: - CRUD
