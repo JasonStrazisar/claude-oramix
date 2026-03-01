@@ -3,7 +3,9 @@ import SwiftUI
 struct ScorePanelView: View {
     let spec: Spec
     var scorer: OllamaScorer = OllamaScorer()
+    var onSplitConfirmed: (([Spec]) -> Void)? = nil
 
+    @EnvironmentObject private var store: SpecStore
     @State private var state = ScorePanelState()
     @State private var showSplitSheet = false
     @State private var splitProposals: [SplitProposal] = []
@@ -190,7 +192,11 @@ struct ScorePanelView: View {
         .sheet(isPresented: $showSplitSheet) {
             SplitProposalView(
                 proposals: $splitProposals,
-                onConfirm: { _ in showSplitSheet = false },
+                onConfirm: { proposals in
+                    let subSpecs = store.createSubSpecs(from: proposals, parent: spec)
+                    onSplitConfirmed?(subSpecs)
+                    showSplitSheet = false
+                },
                 onCancel: { showSplitSheet = false }
             )
         }
