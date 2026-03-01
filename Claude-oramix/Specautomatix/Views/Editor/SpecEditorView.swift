@@ -38,6 +38,15 @@ struct SpecEditorView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
+                    openInteractiveSession(context: spec)
+                } label: {
+                    Label("Open in Claude", systemImage: "arrow.up.right.circle")
+                }
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .help("Open in Claude (⌘⇧C)")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
                     showTerminal.toggle()
                 } label: {
                     Label("Toggle Terminal", systemImage: "terminal")
@@ -56,6 +65,20 @@ struct SpecEditorView: View {
         } message: {
             Text("This action cannot be undone.")
         }
+    }
+
+    // MARK: - Claude Integration
+
+    func buildClaudeCommand(for spec: Spec) -> [String] {
+        let prompt = PromptBuilder.build(from: spec)
+        return ["claude", prompt]
+    }
+
+    func openInteractiveSession(context spec: Spec) {
+        if !showTerminal {
+            showTerminal = true
+        }
+        terminalManager.send(buildClaudeCommand(for: spec).joined(separator: " "))
     }
 
     // MARK: - Header
