@@ -3,9 +3,9 @@ import Foundation
 // MARK: - SplitProposal
 
 struct SplitProposal {
-    let title: String
-    let what: String
-    let estimate: Int
+    var title: String
+    var what: String
+    var estimate: Int
 }
 
 // MARK: - SplitEngine
