@@ -5,26 +5,47 @@ struct SpecEditorView: View {
     let onDelete: (UUID) -> Void
 
     @State private var showDeleteConfirmation = false
+    @State private var showTerminal = false
+    @StateObject private var terminalManager = TerminalManager()
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                headerSection
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    headerSection
 
-                WhatSectionView(what: $spec.sections.what)
-                WhereSectionView(fileTargets: $spec.sections.where_)
-                AcceptanceSectionView(criteria: $spec.sections.acceptance)
-                NonGoalsSectionView(nonGoals: $spec.sections.nonGoals)
-                PatternsSectionView(patterns: $spec.sections.patterns)
-                ContextSectionView(context: $spec.sections.context)
-                TechnicalNotesSectionView(technicalNotes: $spec.sections.technicalNotes)
-                MetadataSectionView(metadata: $spec.metadata)
+                    WhatSectionView(what: $spec.sections.what)
+                    WhereSectionView(fileTargets: $spec.sections.where_)
+                    AcceptanceSectionView(criteria: $spec.sections.acceptance)
+                    NonGoalsSectionView(nonGoals: $spec.sections.nonGoals)
+                    PatternsSectionView(patterns: $spec.sections.patterns)
+                    ContextSectionView(context: $spec.sections.context)
+                    TechnicalNotesSectionView(technicalNotes: $spec.sections.technicalNotes)
+                    MetadataSectionView(metadata: $spec.metadata)
 
-                deleteButton
+                    deleteButton
+                }
+                .padding(24)
             }
-            .padding(24)
+            .background(Color.theme.background)
+
+            if showTerminal {
+                Divider()
+                TerminalView(manager: terminalManager)
+                    .frame(minHeight: 180, idealHeight: 220)
+            }
         }
-        .background(Color.theme.background)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showTerminal.toggle()
+                } label: {
+                    Label("Toggle Terminal", systemImage: "terminal")
+                }
+                .keyboardShortcut("t", modifiers: .command)
+                .help("Toggle Terminal (⌘T)")
+            }
+        }
         .confirmationDialog(
             "Delete this spec?",
             isPresented: $showDeleteConfirmation,
