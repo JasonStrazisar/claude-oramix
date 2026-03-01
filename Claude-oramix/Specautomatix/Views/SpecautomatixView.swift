@@ -33,7 +33,7 @@ struct SpecautomatixView: View {
             }
         } detail: {
             if let spec = editingSpec {
-                ScorePanelView(spec: spec)
+                ScorePanelView(spec: spec, onSplitConfirmed: handleSplitConfirmed)
             } else {
                 scorePanelEmptyState
             }
@@ -214,5 +214,9 @@ struct SpecautomatixView: View {
         } else if selectedSpecId == nil {
             selectedSpecId = specs.first?.id
         }
+    }
+
+    func handleSplitConfirmed(subSpecs: [Spec]) {
+        selectedSpecId = subSpecs.first?.id
     }
 }

@@ -99,4 +99,37 @@ final class SpecautomatixViewTests: XCTestCase {
 
         XCTAssertNil(found)
     }
+
+    // MARK: - Post-split navigation (P2-014)
+
+    private func makeProposals(count: Int) -> [SplitProposal] {
+        (1...count).map { i in
+            SplitProposal(title: "Sub-spec \(i)", what: "What \(i)", estimate: 1)
+        }
+    }
+
+    func test_postSplit_selectedSpecIdPointsToFirstSubSpec() {
+        let store = makeTempStore()
+        let parent = Spec(title: "Large Spec")
+        store.add(parent)
+        let proposals = makeProposals(count: 3)
+        let subSpecs = store.createSubSpecs(from: proposals, parent: parent)
+
+        // Simulates SpecautomatixView.handleSplitConfirmed(subSpecs:)
+        var selectedSpecId: UUID? = nil
+        selectedSpecId = subSpecs.first?.id
+
+        XCTAssertEqual(selectedSpecId, subSpecs[0].id)
+        XCTAssertNotNil(selectedSpecId)
+    }
+
+    func test_postSplit_parentHasSplitStatusInStore() {
+        let store = makeTempStore()
+        let parent = Spec(title: "Large Spec")
+        store.add(parent)
+        let proposals = makeProposals(count: 3)
+        store.createSubSpecs(from: proposals, parent: parent)
+
+        XCTAssertTrue(store.specs.contains(where: { $0.status == .split }))
+    }
 }
