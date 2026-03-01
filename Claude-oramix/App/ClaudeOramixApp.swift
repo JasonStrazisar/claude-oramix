@@ -2,9 +2,18 @@ import SwiftUI
 
 @main
 struct ClaudeOramixApp: App {
-    @StateObject private var specStore = SpecStore()
+    @StateObject private var projectStore: ProjectStore
+    @StateObject private var specStore: SpecStore
     @StateObject private var ollamaMonitor = OllamaMonitor()
-    @StateObject private var projectStore = ProjectStore()
+
+    init() {
+        let ps = ProjectStore()
+        ps.load()
+        let activeId = ps.activeProject?.id
+        let ss = activeId != nil ? SpecStore(projectId: activeId!) : SpecStore()
+        _projectStore = StateObject(wrappedValue: ps)
+        _specStore = StateObject(wrappedValue: ss)
+    }
 
     var body: some Scene {
         WindowGroup("Claude-oramix") {
