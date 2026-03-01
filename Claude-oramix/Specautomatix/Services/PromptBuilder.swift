@@ -37,6 +37,37 @@ struct PromptBuilder {
     }
 }
 
+// MARK: - Conversational Context
+
+extension PromptBuilder {
+    static func buildConversationalContext(tempFilePath: String, projectPath: String) -> String {
+        """
+        You are a senior software engineer analyzing a Swift/SwiftUI macOS project.
+
+        Project path: \(projectPath)
+
+        Your task is to analyze the project at the path above and produce a structured specification in JSON format. Write the JSON to the file at this path: \(tempFilePath)
+
+        The JSON must conform to the following structure (all keys required):
+        {
+          "what": "A concise description of the feature or change",
+          "where": [
+            { "path": "Relative/Path/To/File.swift", "description": "What this file does" }
+          ],
+          "acceptance": [
+            { "type": "happy_path", "given": "...", "when_": "...", "then_": "..." }
+          ],
+          "nonGoals": ["List of things explicitly out of scope"],
+          "patterns": [
+            { "name": "PatternName", "reference": "Where this pattern is used in the codebase" }
+          ]
+        }
+
+        Read the CLAUDE.md file at \(projectPath)/CLAUDE.md for additional project conventions. Write only the JSON to \(tempFilePath), with no additional commentary.
+        """
+    }
+}
+
 // MARK: - Private Section Formatters
 
 private extension PromptBuilder {

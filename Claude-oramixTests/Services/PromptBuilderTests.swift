@@ -67,4 +67,22 @@ final class PromptBuilderTests: XCTestCase {
         // UUID prefix (8 chars) should be in the branch
         XCTAssertTrue(output.contains(String(spec.id.uuidString.prefix(8))))
     }
+
+    func testBuildConversationalContextContainsTempFilePath() {
+        let tempFilePath = "/tmp/test.json"
+        let projectPath = "/Users/user/myapp"
+        let result = PromptBuilder.buildConversationalContext(tempFilePath: tempFilePath, projectPath: projectPath)
+        XCTAssertTrue(result.contains("/tmp/test.json"))
+    }
+
+    func testBuildConversationalContextContainsFormatInstructions() {
+        let tempFilePath = "/tmp/specautomatix-abc.json"
+        let projectPath = "/Users/user/myapp"
+        let result = PromptBuilder.buildConversationalContext(tempFilePath: tempFilePath, projectPath: projectPath)
+        XCTAssertTrue(result.contains("what"))
+        XCTAssertTrue(result.contains("acceptance"))
+        XCTAssertTrue(result.contains("nonGoals"))
+        XCTAssertTrue(result.contains("patterns"))
+        XCTAssertTrue(result.contains("where"))
+    }
 }
