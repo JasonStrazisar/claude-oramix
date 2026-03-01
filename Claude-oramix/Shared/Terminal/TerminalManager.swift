@@ -1,5 +1,4 @@
 import Foundation
-import SwiftTerm
 
 // MARK: - PTYProcess
 
