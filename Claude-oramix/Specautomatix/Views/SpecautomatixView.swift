@@ -3,6 +3,7 @@ import SwiftUI
 struct SpecautomatixView: View {
     @Binding var activeAgent: Agent
     @EnvironmentObject private var store: SpecStore
+    @EnvironmentObject private var projectStore: ProjectStore
     @EnvironmentObject private var ollamaMonitor: OllamaMonitor
     @State private var selectedSpecId: UUID?
     @State private var editingSpec: Spec?
@@ -51,6 +52,11 @@ struct SpecautomatixView: View {
                 .allowsHitTesting(false)
         }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                ProjectPickerView { project in
+                    reloadSpecs(for: project)
+                }
+            }
             ToolbarItem(placement: .automatic) {
                 ollamaStatusIndicator
             }
@@ -218,5 +224,14 @@ struct SpecautomatixView: View {
 
     func handleSplitConfirmed(subSpecs: [Spec]) {
         selectedSpecId = subSpecs.first?.id
+    }
+
+    private func reloadSpecs(for project: Project) {
+        store.specs.map(\.id).forEach { store.delete($0) }
+        let projectSpecStore = SpecStore(projectId: project.id)
+        projectSpecStore.load()
+        projectSpecStore.specs.forEach { store.add($0) }
+        selectedSpecId = nil
+        editingSpec = nil
     }
 }
