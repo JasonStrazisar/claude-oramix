@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var projectStore: ProjectStore
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @State private var activeAgent: Agent = .specautomatix
+    @State private var showOnboarding: Bool = false
 
     var body: some View {
         Group {
@@ -22,6 +25,18 @@ struct ContentView: View {
                     .frame(width: 0, height: 0)
                     .opacity(0)
             }
+        }
+        .onAppear {
+            if !hasCompletedOnboarding {
+                showOnboarding = true
+            }
+        }
+        .sheet(isPresented: $showOnboarding, onDismiss: {
+            hasCompletedOnboarding = true
+        }) {
+            OnboardingDialog(isPresented: $showOnboarding)
+                .environmentObject(projectStore)
+                .interactiveDismissDisabled(true)
         }
     }
 }
