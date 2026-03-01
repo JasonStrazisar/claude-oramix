@@ -78,8 +78,15 @@ struct SpecEditorView: View {
         if !showTerminal {
             showTerminal = true
         }
-        let command = buildClaudeCommand(for: spec).joined(separator: " ")
-        terminalManager.spawn(command: command)
+        let prompt = PromptBuilder.build(from: spec)
+        // Temp file avoids all shell escaping issues with multi-line/special-char content
+        let tmpPath = (NSTemporaryDirectory() as NSString)
+            .appendingPathComponent("claude-oramix-context.md")
+        try? prompt.write(toFile: tmpPath, atomically: true, encoding: .utf8)
+        // Login shell needed to find `claude` in user's PATH
+        let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
+        // Show spec context in terminal, then launch claude interactively
+        terminalManager.spawn(command: "\(shell) -l -c 'cat \"\(tmpPath)\" && claude'")
     }
 
     // MARK: - Header
