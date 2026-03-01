@@ -9,6 +9,7 @@ struct SpecautomatixView: View {
     @State private var editingSpec: Spec?
     @State private var searchText: String = ""
     @State private var focusSearch: Bool = false
+    @State private var showingConversationalView: Bool = false
 
     var filteredSpecs: [Spec] {
         let sorted = SpecSidebar.sorted(store.specs)
@@ -50,6 +51,10 @@ struct SpecautomatixView: View {
                 .frame(width: 0, height: 0)
                 .opacity(0)
                 .allowsHitTesting(false)
+        }
+        .sheet(isPresented: $showingConversationalView) {
+            ConversationalSpecView()
+                .environmentObject(projectStore)
         }
         .toolbar {
             ToolbarItem(placement: .navigation) {
@@ -115,6 +120,15 @@ struct SpecautomatixView: View {
                     .padding(.vertical, 8)
                     .background(Color.theme.accentLight)
                     .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                createNewSpecFormulaire()
+            } label: {
+                Text("Formulaire classique")
+                    .font(.caption)
+                    .foregroundColor(Color.theme.textTertiary)
             }
             .buttonStyle(.plain)
         }
@@ -193,6 +207,10 @@ struct SpecautomatixView: View {
     }
 
     private func createNewSpec() {
+        showingConversationalView = true
+    }
+
+    private func createNewSpecFormulaire() {
         let newSpec = Spec(title: "New Spec")
         store.add(newSpec)
         selectedSpecId = newSpec.id
