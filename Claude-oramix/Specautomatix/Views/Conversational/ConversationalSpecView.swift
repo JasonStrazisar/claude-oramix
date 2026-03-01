@@ -3,7 +3,10 @@ import SwiftUI
 struct ConversationalSpecView: View {
     @EnvironmentObject private var projectStore: ProjectStore
     @StateObject private var terminalManager = TerminalManager()
+    @StateObject private var watcher = TemporarySpecFileWatcher()
     @Environment(\.dismiss) private var dismiss
+
+    @State private var feedbackText: String = ""
 
     var body: some View {
         Group {
@@ -36,18 +39,50 @@ struct ConversationalSpecView: View {
         .onAppear {
             spawnClaudeSession(for: project)
         }
+        .onChange(of: terminalManager.output) { _, newOutput in
+            watcher.parseTerminalOutput(newOutput)
+        }
     }
 
-    // MARK: - Preview pane placeholder
+    // MARK: - Preview pane
 
     @ViewBuilder
     private var previewPane: some View {
-        ZStack {
-            Color(nsColor: NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1))
-            Text("Preview loading...")
-                .foregroundColor(.secondary)
-                .font(.callout)
+        VStack(spacing: 0) {
+            if let sections = watcher.parsedSections {
+                let spec = makeSpec(from: sections)
+                let score = StaticScorer().score(spec)
+                let html = MarkdownRenderer.renderHTML(sections: sections, score: score)
+                WebViewRepresentable(htmlContent: html)
+            } else {
+                ZStack {
+                    Color(nsColor: NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1))
+                    Text("Preview loading...")
+                        .foregroundColor(.secondary)
+                        .font(.callout)
+                }
+            }
+
+            Divider()
+
+            feedbackBar
         }
+    }
+
+    // MARK: - Feedback bar
+
+    @ViewBuilder
+    private var feedbackBar: some View {
+        HStack(spacing: 8) {
+            TextField("Message de feedback...", text: $feedbackText)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { submitFeedback() }
+
+            Button("Envoyer") { submitFeedback() }
+                .disabled(feedbackText.trimmingCharacters(in: .whitespaces).isEmpty)
+        }
+        .padding(8)
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     // MARK: - No active project
@@ -82,7 +117,7 @@ struct ConversationalSpecView: View {
         let tmpPath = (NSTemporaryDirectory() as NSString)
             .appendingPathComponent("claude-oramix-conversational-context.md")
         let context = PromptBuilder.buildConversationalContext(
-            tempFilePath: tmpPath,
+            tempFilePath: watcher.filePath,
             projectPath: project.path
         )
         try? context.write(toFile: tmpPath, atomically: true, encoding: .utf8)
@@ -90,5 +125,20 @@ struct ConversationalSpecView: View {
         terminalManager.spawn(
             command: "cd \"\(project.path)\" && \(shell) -il -c 'cat \"\(tmpPath)\" && claude'"
         )
+    }
+
+    // MARK: - Helpers
+
+    private func submitFeedback() {
+        let trimmed = feedbackText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        terminalManager.send(trimmed + "\n")
+        feedbackText = ""
+    }
+
+    private func makeSpec(from sections: SpecSections) -> Spec {
+        var spec = Spec(title: "")
+        spec.sections = sections
+        return spec
     }
 }
