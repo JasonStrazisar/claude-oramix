@@ -4,28 +4,51 @@ struct PatternsSectionView: View {
     @Binding var patterns: [PatternRef]
 
     var body: some View {
-        GroupBox(label: Text("Patterns to Follow").font(.headline)) {
-            VStack(alignment: .leading, spacing: 8) {
+        EditorSection(icon: "book.closed", title: "Patterns to Follow") {
+            VStack(alignment: .leading, spacing: 10) {
                 ForEach($patterns) { $pattern in
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            TextField("Pattern name", text: $pattern.name)
-                                .bold()
-                            TextField("Reference", text: $pattern.reference)
-                                .foregroundColor(.secondary)
-                        }
-                        Button(action: { removePattern(pattern) }) {
-                            Image(systemName: "minus.circle")
-                                .foregroundColor(.red)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    Divider()
+                    patternRow(pattern: $pattern)
                 }
+
                 Button(action: { patterns.append(PatternRef()) }) {
-                    Label("Add pattern", systemImage: "plus")
+                    HStack(spacing: 5) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("Add pattern")
+                            .font(.callout)
+                    }
+                    .foregroundColor(Color.theme.accent)
                 }
+                .buttonStyle(.plain)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func patternRow(pattern: Binding<PatternRef>) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .top, spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
+                    TextField("Pattern name", text: pattern.name)
+                        .font(.system(.callout, design: .default).weight(.semibold))
+                        .foregroundColor(Color.theme.textPrimary)
+                        .textFieldStyle(.plain)
+
+                    TextField("Reference (file, doc, URL…)", text: pattern.reference)
+                        .font(.callout)
+                        .foregroundColor(Color.theme.textSecondary)
+                        .textFieldStyle(.plain)
+                }
+
+                Button(action: { removePattern(pattern.wrappedValue) }) {
+                    Image(systemName: "minus.circle.fill")
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundColor(Color.theme.textTertiary)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Divider().opacity(0.5)
         }
     }
 

@@ -4,31 +4,29 @@ struct SpecRowView: View {
     let spec: Spec
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .center, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center, spacing: 8) {
                 Text(spec.title)
-                    .font(.body)
+                    .font(.system(.body, design: .default).weight(.medium))
+                    .foregroundColor(Color.theme.textPrimary)
                     .lineLimit(1)
-                Spacer()
-                ScoreBadgeView(grade: spec.score.grade)
+
+                Spacer(minLength: 4)
+
+                ScoreBadgeView(grade: spec.score.grade, size: .small)
             }
+
             HStack(spacing: 6) {
-                Text(spec.status.rawValue)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 1)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 3)
-                            .stroke(Color.secondary.opacity(0.5), lineWidth: 1)
-                    )
+                StatusBadgeView(status: spec.status)
+
                 if let shortcutId = spec.shortcutId {
                     Text(shortcutId)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 10, weight: .regular, design: .monospaced))
+                        .foregroundColor(Color.theme.textTertiary)
                 }
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 5)
+        .padding(.horizontal, 2)
     }
 }

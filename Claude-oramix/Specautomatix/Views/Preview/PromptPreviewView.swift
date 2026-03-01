@@ -10,28 +10,63 @@ struct PromptPreviewView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Toolbar
             HStack {
-                Text("Prompt Preview")
-                    .font(.headline)
-                Spacer()
-                Button(action: copyToClipboard) {
-                    Label(copied ? "Copied!" : "Copy to Clipboard",
-                          systemImage: copied ? "checkmark" : "doc.on.doc")
+                HStack(spacing: 6) {
+                    Image(systemName: "eye")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color.theme.textTertiary)
+                    Text("Prompt Preview")
+                        .font(.system(.callout, design: .default).weight(.semibold))
+                        .foregroundColor(Color.theme.textSecondary)
                 }
-            }
 
+                Spacer()
+
+                Button(action: copyToClipboard) {
+                    HStack(spacing: 5) {
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 11, weight: .semibold))
+                        Text(copied ? "Copied!" : "Copy")
+                            .font(.callout)
+                    }
+                    .foregroundColor(copied ? Color.theme.gradeAText : Color.theme.accent)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(copied ? Color.theme.gradeABadge : Color.theme.accentLight)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .animation(.easeInOut(duration: 0.2), value: copied)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(Color.theme.surface)
+            .overlay(
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color.theme.border),
+                alignment: .bottom
+            )
+
+            // Content
             ScrollView {
                 Text(prompt)
-                    .font(.system(.body, design: .monospaced))
+                    .font(.system(.callout, design: .monospaced))
+                    .foregroundColor(Color.theme.textPrimary)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(8)
+                    .padding(16)
             }
-            .background(Color(nsColor: .textBackgroundColor))
-            .cornerRadius(6)
+            .background(Color.theme.background)
         }
-        .padding()
+        .background(Color.theme.background)
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color.theme.border, lineWidth: 1)
+        )
     }
 
     private func copyToClipboard() {

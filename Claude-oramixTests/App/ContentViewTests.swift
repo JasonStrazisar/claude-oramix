@@ -3,8 +3,8 @@ import XCTest
 
 
 final class ContentViewTests: XCTestCase {
-    func testDefaultTabIsSpecautomatix() {
-        let view = ContentView()
-        XCTAssertEqual(view.selectedTab, 0)
+    func testDefaultAgentIsSpecautomatix() {
+        XCTAssertEqual(Agent.specautomatix.rawValue, 0)
+        XCTAssertEqual(Agent.allCases.first, .specautomatix)
     }
 }

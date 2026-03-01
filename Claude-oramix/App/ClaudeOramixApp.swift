@@ -8,9 +8,17 @@ struct ClaudeOramixApp: App {
         WindowGroup("Claude-oramix") {
             ContentView()
                 .environmentObject(specStore)
+                .preferredColorScheme(.light)
         }
+        .defaultSize(width: 1280, height: 820)
+        .windowToolbarStyle(.unified)
         .commands {
             CommandGroup(replacing: .newItem) {}
+        }
+
+        Settings {
+            SettingsPlaceholderView()
+                .preferredColorScheme(.light)
         }
     }
 }

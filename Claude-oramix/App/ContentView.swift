@@ -1,46 +1,24 @@
 import SwiftUI
 
 struct ContentView: View {
-    var selectedTab: Int = 0
-
-    @State private var activeTab: Int = 0
+    @State private var activeAgent: Agent = .specautomatix
 
     var body: some View {
-        TabView(selection: $activeTab) {
-            SpecautomatixView()
-                .tabItem {
-                    Label("Specautomatix", systemImage: "hammer")
-                }
-                .tag(0)
-
-            NuitefixPlaceholderView()
-                .tabItem {
-                    Label("Nuitéfix", systemImage: "pawprint")
-                }
-                .tag(1)
-
-            SettingsPlaceholderView()
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape")
-                }
-                .tag(2)
+        Group {
+            switch activeAgent {
+            case .specautomatix: SpecautomatixView(activeAgent: $activeAgent)
+            case .nuitefix:      NuitefixView(activeAgent: $activeAgent)
+            }
         }
-        .onAppear {
-            activeTab = selectedTab
-        }
+        .frame(minWidth: 1100, minHeight: 700)
         .overlay(alignment: .topLeading) {
-            // Hidden buttons to capture keyboard shortcuts
             Group {
-                Button("") { activeTab = 0 }
+                Button("") { activeAgent = .specautomatix }
                     .keyboardShortcut("1", modifiers: .command)
                     .frame(width: 0, height: 0)
                     .opacity(0)
-                Button("") { activeTab = 1 }
+                Button("") { activeAgent = .nuitefix }
                     .keyboardShortcut("2", modifiers: .command)
-                    .frame(width: 0, height: 0)
-                    .opacity(0)
-                Button("") { activeTab = 2 }
-                    .keyboardShortcut(",", modifiers: .command)
                     .frame(width: 0, height: 0)
                     .opacity(0)
             }

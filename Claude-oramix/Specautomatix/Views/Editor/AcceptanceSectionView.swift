@@ -4,8 +4,8 @@ struct AcceptanceSectionView: View {
     @Binding var criteria: [AcceptanceCriteria]
 
     var body: some View {
-        GroupBox(label: Text("Acceptance Criteria").font(.headline)) {
-            VStack(alignment: .leading, spacing: 8) {
+        EditorSection(icon: "checkmark.shield", title: "Acceptance Criteria") {
+            VStack(alignment: .leading, spacing: 10) {
                 ForEach($criteria) { $criterion in
                     AcceptanceCriteriaRowView(
                         criterion: $criterion,
@@ -14,8 +14,15 @@ struct AcceptanceSectionView: View {
                 }
 
                 Button(action: addCriterion) {
-                    Label("Add criterion", systemImage: "plus")
+                    HStack(spacing: 5) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("Add criterion")
+                            .font(.callout)
+                    }
+                    .foregroundColor(Color.theme.accent)
                 }
+                .buttonStyle(.plain)
             }
         }
     }
