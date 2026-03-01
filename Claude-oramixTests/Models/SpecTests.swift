@@ -31,6 +31,72 @@ private func makeAcceptanceCriteria(
 // MARK: - Tests
 
 final class SpecTests: XCTestCase {
+    func testDecodesLegacyShortcutId() throws {
+        let json = """
+        {
+            "id": "00000001-0000-0000-0000-000000000001",
+            "shortcutId": "SC-001",
+            "title": "Legacy spec",
+            "status": "draft",
+            "sections": {
+                "what": "",
+                "where": [],
+                "acceptance": [],
+                "nonGoals": [],
+                "patterns": []
+            },
+            "metadata": {
+                "labels": [],
+                "dependencies": []
+            },
+            "score": {
+                "total": 0,
+                "grade": "F",
+                "checks": [],
+                "suggestions": [],
+                "isAgentReady": false
+            },
+            "createdAt": "2024-01-01T00:00:00Z",
+            "updatedAt": "2024-01-01T00:00:00Z"
+        }
+        """.data(using: .utf8)!
+        let decoded = try makeDecoder().decode(Spec.self, from: json)
+        XCTAssertEqual(decoded.issueRef, "SC-001")
+    }
+
+    func testDecodesNewIssueRef() throws {
+        let json = """
+        {
+            "id": "00000001-0000-0000-0000-000000000002",
+            "issueRef": "https://github.com/x/y/issues/1",
+            "title": "New spec",
+            "status": "draft",
+            "sections": {
+                "what": "",
+                "where": [],
+                "acceptance": [],
+                "nonGoals": [],
+                "patterns": []
+            },
+            "metadata": {
+                "labels": [],
+                "dependencies": []
+            },
+            "score": {
+                "total": 0,
+                "grade": "F",
+                "checks": [],
+                "suggestions": [],
+                "isAgentReady": false
+            },
+            "createdAt": "2024-01-01T00:00:00Z",
+            "updatedAt": "2024-01-01T00:00:00Z"
+        }
+        """.data(using: .utf8)!
+        let decoded = try makeDecoder().decode(Spec.self, from: json)
+        XCTAssertEqual(decoded.issueRef, "https://github.com/x/y/issues/1")
+    }
+
     func testSpecCodableRoundTrip() throws {
         let spec = makeSpec()
         let data = try makeEncoder().encode(spec)

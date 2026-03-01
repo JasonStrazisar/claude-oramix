@@ -4,7 +4,7 @@ import Foundation
 
 struct Spec: Codable, Identifiable {
     let id: UUID
-    var shortcutId: String?
+    var issueRef: String?
     var title: String
     var status: SpecStatus
     var sections: SpecSections
@@ -17,7 +17,7 @@ struct Spec: Codable, Identifiable {
     init(title: String) {
         let now = Date()
         self.id = UUID()
-        self.shortcutId = nil
+        self.issueRef = nil
         self.title = title
         self.status = .draft
         self.sections = SpecSections()
@@ -26,6 +26,52 @@ struct Spec: Codable, Identifiable {
         self.execution = nil
         self.createdAt = now
         self.updatedAt = now
+    }
+
+    // MARK: - CodingKeys (with legacy shortcutId fallback)
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case issueRef
+        case shortcutId  // legacy key — read-only fallback
+        case title
+        case status
+        case sections
+        case metadata
+        case score
+        case execution
+        case createdAt
+        case updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        // issueRef: prefer "issueRef" key, fall back to legacy "shortcutId"
+        issueRef = try container.decodeIfPresent(String.self, forKey: .issueRef)
+            ?? container.decodeIfPresent(String.self, forKey: .shortcutId)
+        title = try container.decode(String.self, forKey: .title)
+        status = try container.decode(SpecStatus.self, forKey: .status)
+        sections = try container.decode(SpecSections.self, forKey: .sections)
+        metadata = try container.decode(SpecMetadata.self, forKey: .metadata)
+        score = try container.decode(SpecScore.self, forKey: .score)
+        execution = try container.decodeIfPresent(ExecutionResult.self, forKey: .execution)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(issueRef, forKey: .issueRef)
+        try container.encode(title, forKey: .title)
+        try container.encode(status, forKey: .status)
+        try container.encode(sections, forKey: .sections)
+        try container.encode(metadata, forKey: .metadata)
+        try container.encode(score, forKey: .score)
+        try container.encodeIfPresent(execution, forKey: .execution)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
     }
 }
 

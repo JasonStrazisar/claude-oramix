@@ -19,8 +19,8 @@ struct SpecRowView: View {
             HStack(spacing: 6) {
                 StatusBadgeView(status: spec.status)
 
-                if let shortcutId = spec.shortcutId {
-                    Text(shortcutId)
+                if let issueRef = spec.issueRef {
+                    Text(issueRef)
                         .font(.system(size: 10, weight: .regular, design: .monospaced))
                         .foregroundColor(Color.theme.textTertiary)
                 }
