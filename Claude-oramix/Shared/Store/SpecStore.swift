@@ -78,4 +78,24 @@ final class SpecStore: ObservableObject {
         specs = specs.filter { $0.id != specId }
         save()
     }
+
+    // MARK: - Split
+
+    @discardableResult
+    func createSubSpecs(from proposals: [SplitProposal], parent: Spec) -> [Spec] {
+        let subSpecs: [Spec] = proposals.map { proposal in
+            let resolvedTitle = proposal.title.isEmpty ? "Sub-spec" : proposal.title
+            var subSpec = Spec(title: resolvedTitle)
+            subSpec.sections.what = proposal.what
+            subSpec.metadata.estimate = proposal.estimate
+            return subSpec
+        }
+        subSpecs.forEach { add($0) }
+
+        var updatedParent = parent
+        updatedParent.status = .split
+        update(updatedParent)
+
+        return subSpecs
+    }
 }

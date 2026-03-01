@@ -3,6 +3,36 @@ import XCTest
 
 final class ScorePanelViewTests: XCTestCase {
 
+    // MARK: - ScorePanelState tests
+
+    func testInitialIsCheckingIsFalse() {
+        let sut = ScorePanelState()
+        XCTAssertFalse(sut.isChecking)
+    }
+
+    func testIsCheckButtonDisabledWhenOllamaAnalysisNil() {
+        let sut = ScorePanelState()
+        XCTAssertFalse(sut.isCheckButtonDisabled)
+    }
+
+    func testIsCheckButtonDisabledWhenOllamaAnalysisNotNil() {
+        var sut = ScorePanelState()
+        sut.ollamaAnalysis = OllamaAnalysis(
+            qualityScore: 0.8,
+            suggestions: [],
+            splitSuggestions: []
+        )
+        XCTAssertTrue(sut.isCheckButtonDisabled)
+    }
+
+    func testIsCheckButtonDisabledWhenIsChecking() {
+        var sut = ScorePanelState()
+        sut.isChecking = true
+        XCTAssertTrue(sut.isCheckButtonDisabled)
+    }
+
+    // MARK: - Existing ScorePanelView tests
+
     // Test 1: mock-001 gives grade A, isAgentReady=true
     func testMock001GradeAAgentReady() {
         let spec = MockData.specs[0]
