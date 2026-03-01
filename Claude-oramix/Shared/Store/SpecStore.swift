@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - SpecStore
 
-final class SpecStore: ObservableObject {
+class SpecStore: ObservableObject {
 
     // MARK: - Published State
 

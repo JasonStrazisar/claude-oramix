@@ -6,9 +6,12 @@ struct ScorePanelView: View {
     var onSplitConfirmed: (([Spec]) -> Void)? = nil
 
     @EnvironmentObject private var store: SpecStore
+    @EnvironmentObject private var projectStore: ProjectStore
     @State private var state = ScorePanelState()
     @State private var showSplitSheet = false
     @State private var splitProposals: [SplitProposal] = []
+    @State private var isPublishing = false
+    @State private var publishError: String? = nil
 
     var shouldShowSplitButton: Bool {
         (spec.metadata.estimate ?? 0) > 3 || state.ollamaAnalysis?.splitSuggestions.isEmpty == false
@@ -52,10 +55,25 @@ struct ScorePanelView: View {
 
                     splitSection
                 }
+
+                if score.total >= 80, projectStore.activeProject?.issueTracker != nil {
+                    Divider()
+                        .background(Color.theme.border)
+
+                    publishSection
+                }
             }
             .padding(20)
         }
         .background(Color.theme.surface)
+        .alert("Erreur de publication", isPresented: Binding(
+            get: { publishError != nil },
+            set: { if !$0 { publishError = nil } }
+        )) {
+            Button("OK") { publishError = nil }
+        } message: {
+            Text(publishError ?? "")
+        }
     }
 
     // MARK: - Score header
@@ -202,7 +220,48 @@ struct ScorePanelView: View {
         }
     }
 
+    // MARK: - Publish section
+
+    @ViewBuilder
+    private var publishSection: some View {
+        Button {
+            Task { await publish() }
+        } label: {
+            HStack(spacing: 8) {
+                if isPublishing {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+                Text(isPublishing ? "Publication..." : "Publier")
+                    .font(.system(.callout, design: .default).weight(.medium))
+            }
+        }
+        .disabled(isPublishing)
+    }
+
     // MARK: - Private
+
+    @MainActor
+    private func publish() async {
+        guard let project = projectStore.activeProject,
+              let config = project.issueTracker else { return }
+
+        isPublishing = true
+        defer { isPublishing = false }
+
+        let provider = GitHubIssueTracker(
+            owner: config.projectKey.components(separatedBy: "/").first ?? "",
+            repo: config.projectKey.components(separatedBy: "/").last ?? ""
+        )
+
+        do {
+            _ = try await PublishSpecAction().execute(spec: spec, project: project, provider: provider, store: store)
+        } catch IssueTrackerError.unauthorized {
+            publishError = "Token GitHub invalide — vérifiez vos réglages"
+        } catch {
+            publishError = error.localizedDescription
+        }
+    }
 
     @MainActor
     private func runOllamaCheck() async {
