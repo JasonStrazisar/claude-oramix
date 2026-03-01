@@ -4,9 +4,15 @@ import PackageDescription
 let package = Package(
     name: "Claude-oramix",
     platforms: [.macOS(.v14)],
+    dependencies: [
+        .package(url: "https://github.com/migueldeicaza/SwiftTerm", from: "1.2.0")
+    ],
     targets: [
         .target(
             name: "Claude-oramix",
+            dependencies: [
+                .product(name: "SwiftTerm", package: "SwiftTerm")
+            ],
             path: "Claude-oramix",
             exclude: ["App/ClaudeOramixApp.swift"]
         ),
