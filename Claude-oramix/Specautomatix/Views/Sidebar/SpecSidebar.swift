@@ -5,6 +5,7 @@ struct SpecSidebar: View {
     @Binding var selectedSpecId: UUID?
     @Binding var searchText: String
     @Binding var focusSearch: Bool
+    @Binding var activeAgent: Agent
 
     @FocusState private var isSearchFocused: Bool
 
@@ -16,6 +17,11 @@ struct SpecSidebar: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            AgentSelectorView(activeAgent: $activeAgent)
+
+            Divider()
+                .opacity(0.6)
+
             searchField
 
             Divider()

@@ -1,12 +1,29 @@
 import SwiftUI
 
-struct NuitefixPlaceholderView: View {
+struct NuitefixView: View {
+    @Binding var activeAgent: Agent
+
     var body: some View {
+        NavigationSplitView {
+            VStack(spacing: 0) {
+                AgentSelectorView(activeAgent: $activeAgent)
+                Divider()
+                    .opacity(0.6)
+                Spacer()
+            }
+            .background(Color(nsColor: .controlBackgroundColor))
+            .navigationSplitViewColumnWidth(272)
+        } detail: {
+            placeholderContent
+        }
+    }
+
+    @ViewBuilder
+    private var placeholderContent: some View {
         VStack(spacing: 0) {
             Spacer()
 
             VStack(spacing: 20) {
-                // Dog illustration area
                 ZStack {
                     Circle()
                         .fill(Color.theme.accentLight)

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SpecautomatixView: View {
+    @Binding var activeAgent: Agent
     @EnvironmentObject private var store: SpecStore
     @State private var selectedSpecId: UUID?
     @State private var editingSpec: Spec?
@@ -19,8 +20,10 @@ struct SpecautomatixView: View {
                 store: store,
                 selectedSpecId: $selectedSpecId,
                 searchText: $searchText,
-                focusSearch: $focusSearch
+                focusSearch: $focusSearch,
+                activeAgent: $activeAgent
             )
+            .navigationSplitViewColumnWidth(272)
         } content: {
             if editingSpec != nil {
                 SpecEditorView(spec: editingSpecBinding, onDelete: handleDelete)
