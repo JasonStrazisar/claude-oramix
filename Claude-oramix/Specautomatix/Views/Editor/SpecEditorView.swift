@@ -6,6 +6,7 @@ struct SpecEditorView: View {
 
     @State private var showDeleteConfirmation = false
     @State private var showTerminal = false
+    @State private var terminalInput = ""
     @StateObject private var terminalManager = TerminalManager()
 
     var body: some View {
@@ -33,6 +34,7 @@ struct SpecEditorView: View {
                 Divider()
                 TerminalView(manager: terminalManager)
                     .frame(minHeight: 180, idealHeight: 220)
+                terminalInputBar
             }
         }
         .toolbar {
@@ -87,6 +89,29 @@ struct SpecEditorView: View {
         // so that PATH modifications (nvm, homebrew, etc.) are available
         let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
         terminalManager.spawn(command: "\(shell) -il -c 'cat \"\(tmpPath)\" && claude'")
+    }
+
+    // MARK: - Terminal input
+
+    @ViewBuilder
+    private var terminalInputBar: some View {
+        HStack(spacing: 8) {
+            Text("❯")
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .foregroundColor(.green)
+
+            TextField("", text: $terminalInput)
+                .font(.system(size: 12, design: .monospaced))
+                .textFieldStyle(.plain)
+                .foregroundColor(.white)
+                .onSubmit {
+                    terminalManager.send(terminalInput + "\n")
+                    terminalInput = ""
+                }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color(nsColor: NSColor(red: 0.08, green: 0.08, blue: 0.08, alpha: 1)))
     }
 
     // MARK: - Header
