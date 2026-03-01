@@ -43,6 +43,18 @@ struct OllamaScorer {
         self.session = session
     }
 
+    private static let tagsEndpoint = URL(string: "http://localhost:11434/api/tags")!
+
+    func isAvailable() async -> Bool {
+        do {
+            let (_, response) = try await session.data(from: Self.tagsEndpoint)
+            guard let httpResponse = response as? HTTPURLResponse else { return false }
+            return httpResponse.statusCode == 200
+        } catch {
+            return false
+        }
+    }
+
     func analyzeQuality(spec: Spec) async throws -> OllamaAnalysis {
         let prompt = Self.promptTemplate.replacingOccurrences(
             of: "___SPEC_PLACEHOLDER___",
