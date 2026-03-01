@@ -2,6 +2,17 @@ import SwiftUI
 
 struct ScorePanelView: View {
     let spec: Spec
+    var scorer: OllamaScorer = OllamaScorer()
+    var onSplitConfirmed: (([Spec]) -> Void)? = nil
+
+    @EnvironmentObject private var store: SpecStore
+    @State private var state = ScorePanelState()
+    @State private var showSplitSheet = false
+    @State private var splitProposals: [SplitProposal] = []
+
+    var shouldShowSplitButton: Bool {
+        (spec.metadata.estimate ?? 0) > 3 || state.ollamaAnalysis?.splitSuggestions.isEmpty == false
+    }
 
     private static let categoryOrder: [CheckCategory] = [
         .completeness,
@@ -28,6 +39,18 @@ struct ScorePanelView: View {
                         .background(Color.theme.border)
 
                     suggestionsSection(suggestions: score.suggestions)
+                }
+
+                Divider()
+                    .background(Color.theme.border)
+
+                ollamaSection
+
+                if shouldShowSplitButton {
+                    Divider()
+                        .background(Color.theme.border)
+
+                    splitSection
                 }
             }
             .padding(20)
@@ -126,5 +149,65 @@ struct ScorePanelView: View {
             .background(Color.theme.gradeCBadge.opacity(0.6))
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
+    }
+
+    // MARK: - Ollama section
+
+    @ViewBuilder
+    private var ollamaSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                Task { await runOllamaCheck() }
+            } label: {
+                HStack(spacing: 8) {
+                    if state.isChecking {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text("Check with Ollama")
+                        .font(.system(.callout, design: .default).weight(.medium))
+                }
+            }
+            .disabled(state.isCheckButtonDisabled)
+            .keyboardShortcut("S", modifiers: [.command, .shift])
+
+            OllamaAnalysisView(
+                analysis: state.ollamaAnalysis,
+                isLoading: state.isChecking
+            )
+        }
+    }
+
+    // MARK: - Split section
+
+    @ViewBuilder
+    private var splitSection: some View {
+        Button {
+            splitProposals = SplitEngine().propose(spec: spec, ollamaAnalysis: state.ollamaAnalysis)
+            showSplitSheet = true
+        } label: {
+            Label("Split this spec", systemImage: "scissors")
+                .font(.system(.callout, design: .default).weight(.medium))
+        }
+        .sheet(isPresented: $showSplitSheet) {
+            SplitProposalView(
+                proposals: $splitProposals,
+                onConfirm: { proposals in
+                    let subSpecs = store.createSubSpecs(from: proposals, parent: spec)
+                    onSplitConfirmed?(subSpecs)
+                    showSplitSheet = false
+                },
+                onCancel: { showSplitSheet = false }
+            )
+        }
+    }
+
+    // MARK: - Private
+
+    @MainActor
+    private func runOllamaCheck() async {
+        state.isChecking = true
+        defer { state.isChecking = false }
+        state.ollamaAnalysis = try? await scorer.analyzeQuality(spec: spec)
     }
 }

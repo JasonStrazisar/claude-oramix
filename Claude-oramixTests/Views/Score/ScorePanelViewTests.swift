@@ -3,6 +3,36 @@ import XCTest
 
 final class ScorePanelViewTests: XCTestCase {
 
+    // MARK: - ScorePanelState tests
+
+    func testInitialIsCheckingIsFalse() {
+        let sut = ScorePanelState()
+        XCTAssertFalse(sut.isChecking)
+    }
+
+    func testIsCheckButtonDisabledWhenOllamaAnalysisNil() {
+        let sut = ScorePanelState()
+        XCTAssertFalse(sut.isCheckButtonDisabled)
+    }
+
+    func testIsCheckButtonDisabledWhenOllamaAnalysisNotNil() {
+        var sut = ScorePanelState()
+        sut.ollamaAnalysis = OllamaAnalysis(
+            qualityScore: 0.8,
+            suggestions: [],
+            splitSuggestions: []
+        )
+        XCTAssertTrue(sut.isCheckButtonDisabled)
+    }
+
+    func testIsCheckButtonDisabledWhenIsChecking() {
+        var sut = ScorePanelState()
+        sut.isChecking = true
+        XCTAssertTrue(sut.isCheckButtonDisabled)
+    }
+
+    // MARK: - Existing ScorePanelView tests
+
     // Test 1: mock-001 gives grade A, isAgentReady=true
     func testMock001GradeAAgentReady() {
         let spec = MockData.specs[0]
@@ -38,5 +68,21 @@ final class ScorePanelViewTests: XCTestCase {
         for naCheck in naChecks {
             XCTAssertTrue(naCheck.message.contains("N/A"))
         }
+    }
+
+    // MARK: - shouldShowSplitButton tests
+
+    func testShouldShowSplitButton_whenEstimateGreaterThan3() {
+        var spec = Spec(title: "Big Feature")
+        spec.metadata = SpecMetadata(estimate: 4)
+        let view = ScorePanelView(spec: spec)
+        XCTAssertTrue(view.shouldShowSplitButton)
+    }
+
+    func testShouldShowSplitButton_whenEstimate2AndNoOllama() {
+        var spec = Spec(title: "Small Feature")
+        spec.metadata = SpecMetadata(estimate: 2)
+        let view = ScorePanelView(spec: spec)
+        XCTAssertFalse(view.shouldShowSplitButton)
     }
 }

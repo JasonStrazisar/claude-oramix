@@ -3,6 +3,7 @@ import SwiftUI
 struct SpecautomatixView: View {
     @Binding var activeAgent: Agent
     @EnvironmentObject private var store: SpecStore
+    @EnvironmentObject private var ollamaMonitor: OllamaMonitor
     @State private var selectedSpecId: UUID?
     @State private var editingSpec: Spec?
     @State private var searchText: String = ""
@@ -32,7 +33,7 @@ struct SpecautomatixView: View {
             }
         } detail: {
             if let spec = editingSpec {
-                ScorePanelView(spec: spec)
+                ScorePanelView(spec: spec, onSplitConfirmed: handleSplitConfirmed)
             } else {
                 scorePanelEmptyState
             }
@@ -49,6 +50,34 @@ struct SpecautomatixView: View {
                 .opacity(0)
                 .allowsHitTesting(false)
         }
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
+                ollamaStatusIndicator
+            }
+        }
+    }
+
+    // MARK: - Ollama status indicator
+
+    @ViewBuilder
+    private var ollamaStatusIndicator: some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(
+                    ollamaMonitor.status == .available ? Color.green :
+                    ollamaMonitor.status == .checking  ? Color.orange :
+                    Color.red
+                )
+                .frame(width: 8, height: 8)
+            Text(
+                ollamaMonitor.status == .available ? "Ollama available" :
+                ollamaMonitor.status == .checking  ? "Checking..." :
+                "Ollama offline"
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        .padding(.trailing, 8)
     }
 
     // MARK: - Empty states
@@ -185,5 +214,9 @@ struct SpecautomatixView: View {
         } else if selectedSpecId == nil {
             selectedSpecId = specs.first?.id
         }
+    }
+
+    func handleSplitConfirmed(subSpecs: [Spec]) {
+        selectedSpecId = subSpecs.first?.id
     }
 }
