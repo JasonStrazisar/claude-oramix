@@ -4,12 +4,14 @@ import SwiftUI
 struct ClaudeOramixApp: App {
     @StateObject private var specStore = SpecStore()
     @StateObject private var ollamaMonitor = OllamaMonitor()
+    @StateObject private var projectStore = ProjectStore()
 
     var body: some Scene {
         WindowGroup("Claude-oramix") {
             ContentView()
                 .environmentObject(specStore)
                 .environmentObject(ollamaMonitor)
+                .environmentObject(projectStore)
                 .preferredColorScheme(.light)
         }
         .defaultSize(width: 1280, height: 820)
