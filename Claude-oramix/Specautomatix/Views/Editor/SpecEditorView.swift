@@ -83,10 +83,10 @@ struct SpecEditorView: View {
         let tmpPath = (NSTemporaryDirectory() as NSString)
             .appendingPathComponent("claude-oramix-context.md")
         try? prompt.write(toFile: tmpPath, atomically: true, encoding: .utf8)
-        // Login shell needed to find `claude` in user's PATH
+        // Interactive login shell (-il) needed to load .zshrc/.bashrc AND .zprofile
+        // so that PATH modifications (nvm, homebrew, etc.) are available
         let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
-        // Show spec context in terminal, then launch claude interactively
-        terminalManager.spawn(command: "\(shell) -l -c 'cat \"\(tmpPath)\" && claude'")
+        terminalManager.spawn(command: "\(shell) -il -c 'cat \"\(tmpPath)\" && claude'")
     }
 
     // MARK: - Header
