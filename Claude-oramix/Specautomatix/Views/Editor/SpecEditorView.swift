@@ -125,8 +125,8 @@ struct SpecEditorView: View {
                 .foregroundColor(Color.theme.textPrimary)
                 .textFieldStyle(.plain)
 
-            if let shortcutId = spec.shortcutId {
-                Text(shortcutId)
+            if let issueRef = spec.issueRef {
+                Text(issueRef)
                     .font(.system(size: 11, weight: .regular, design: .monospaced))
                     .foregroundColor(Color.theme.textTertiary)
             }

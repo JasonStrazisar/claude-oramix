@@ -77,7 +77,7 @@ private extension PromptBuilder {
     }
 
     static func instructionsSection(_ spec: Spec) -> String {
-        let branchId = spec.shortcutId ?? String(spec.id.uuidString.prefix(8))
+        let branchId = spec.issueRef ?? String(spec.id.uuidString.prefix(8))
         let slug = spec.title.slugified
         return "## Instructions\n- Branch: `sc-\(branchId)/\(slug)`\n- Implement changes, write tests for each criterion, ensure all pass\n- Commit with descriptive message referencing the spec"
     }

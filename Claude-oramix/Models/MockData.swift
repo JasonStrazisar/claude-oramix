@@ -5,7 +5,7 @@ import Foundation
 extension Spec {
     init(
         id: UUID,
-        shortcutId: String?,
+        issueRef: String?,
         title: String,
         status: SpecStatus,
         sections: SpecSections,
@@ -15,7 +15,7 @@ extension Spec {
         updatedAt: Date
     ) {
         self.id = id
-        self.shortcutId = shortcutId
+        self.issueRef = issueRef
         self.title = title
         self.status = status
         self.sections = sections
@@ -44,7 +44,7 @@ struct MockData {
 private func mock001() -> Spec {
     Spec(
         id: UUID(uuidString: "00000001-0000-0000-0000-000000000001")!,
-        shortcutId: "SC-1234",
+        issueRef: "SC-1234",
         title: "Add French locale to date formatter utility",
         status: .ready,
         sections: SpecSections(
@@ -131,7 +131,7 @@ private func mock001() -> Spec {
 private func mock002() -> Spec {
     Spec(
         id: UUID(uuidString: "00000002-0000-0000-0000-000000000002")!,
-        shortcutId: "SC-1235",
+        issueRef: "SC-1235",
         title: "Fix CSV export encoding for special characters",
         status: .draft,
         sections: SpecSections(
@@ -187,7 +187,7 @@ private func mock002() -> Spec {
 private func mock003() -> Spec {
     Spec(
         id: UUID(uuidString: "00000003-0000-0000-0000-000000000003")!,
-        shortcutId: "SC-1236",
+        issueRef: "SC-1236",
         title: "Improve dashboard loading performance",
         status: .draft,
         sections: SpecSections(
@@ -228,7 +228,7 @@ private func mock003() -> Spec {
 private func mock004() -> Spec {
     Spec(
         id: UUID(uuidString: "00000004-0000-0000-0000-000000000004")!,
-        shortcutId: "SC-1237",
+        issueRef: "SC-1237",
         title: "Add new chart type",
         status: .draft,
         sections: SpecSections(
@@ -255,7 +255,7 @@ private func mock004() -> Spec {
 private func mock005() -> Spec {
     Spec(
         id: UUID(uuidString: "00000005-0000-0000-0000-000000000005")!,
-        shortcutId: "SC-1238",
+        issueRef: "SC-1238",
         title: "Add tooltip to truncated restaurant names in table",
         status: .draft,
         sections: SpecSections(

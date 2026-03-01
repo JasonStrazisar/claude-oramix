@@ -52,16 +52,16 @@ final class PromptBuilderTests: XCTestCase {
         XCTAssertFalse(output.contains("## Technical Notes"))
     }
 
-    func testBranchNameUsesShortcutId() {
+    func testBranchNameUsesIssueRef() {
         var spec = makeSpec(title: "Add French locale")
-        spec.shortcutId = "SC-1234"
+        spec.issueRef = "SC-1234"
         let output = PromptBuilder.build(from: spec)
         XCTAssertTrue(output.contains("sc-SC-1234/"))
     }
 
     func testBranchNameUsesUUIDWhenNoShortcutId() {
         var spec = makeSpec(title: "Add Feature")
-        spec.shortcutId = nil
+        spec.issueRef = nil
         let output = PromptBuilder.build(from: spec)
         XCTAssertTrue(output.contains("sc-"))
         // UUID prefix (8 chars) should be in the branch
